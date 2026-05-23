@@ -1,0 +1,34 @@
+Jane Developer
+jane.dev@example.com | +1-555-0142 | github.com/janedev
+
+Summary
+Backend-leaning fullstack engineer with 6 years building Python/TypeScript
+services in finance and developer tools. Owns features end-to-end and likes
+fast feedback loops.
+
+Skills
+Python, TypeScript, FastAPI, Node.js, React, Next.js, PostgreSQL, Redis,
+Docker, AWS (Lambda, S3, ECS), GitHub Actions, Pytest
+
+Experience
+
+Senior Backend Engineer — Quarry Financial
+Jul 2022 — Present
+- Led migration of the ledger service from a Django monolith to FastAPI,
+  cutting p95 latency by 40% on the hot path.
+- Owned the on-call rotation playbook; mean time to recover dropped from
+  38m to 11m over two quarters.
+- Mentored two juniors through their first production launches.
+
+Software Engineer — Beacon Devtools
+Jan 2020 — Jun 2022
+- Built the CLI for a Postgres branching tool used by ~3k weekly devs.
+- Shipped the GitHub App that auto-creates preview databases per PR.
+
+Software Engineer — Ridgeline Analytics
+Aug 2018 — Dec 2019
+- Wrote ingest pipelines (Python, Airflow) for a 200M-row financial dataset.
+- Built React dashboards consumed by ops + risk teams.
+
+Education
+B.S. Computer Science — University of Waterloo, 2018

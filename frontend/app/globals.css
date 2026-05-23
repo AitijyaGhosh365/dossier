@@ -1,0 +1,266 @@
+@import "tailwindcss";
+
+@theme inline {
+  /* Surface — pure whites, faint cool tints */
+  --color-bg: #f4f7fc;
+  --color-bg-soft: #eaf0fa;
+  --color-card: #ffffff;
+  --color-card-tint: #f7f9fd;
+
+  --color-border-faint: #f0f4fa;
+  --color-border-soft: #e2e9f4;
+  --color-border: #ced9ec;
+  --color-border-strong: #a8b7d4;
+
+  /* Ink — dark navy/slate, never pure black */
+  --color-ink: #1a2440;        /* primary — dark navy, reads strong but blue-tinted */
+  --color-ink-soft: #3a4566;   /* body */
+  --color-ink-faint: #6b7388;  /* meta */
+  --color-ink-ghost: #9ba3b8;  /* captions */
+
+  /* Brand — bright royal blue, like Evalitix */
+  --color-brand: #2d5bff;
+  --color-brand-bright: #4a72ff;
+  --color-brand-deep: #1f3fc7;
+  --color-brand-soft: #e6edff;
+  --color-brand-glow: rgba(45, 91, 255, 0.22);
+
+  /* Section accents — burnt orange, like the reference */
+  --color-section: #c2691a;
+  --color-section-soft: #fbeada;
+
+  /* Strengths — clean green */
+  --color-strength: #2a8a3e;
+  --color-strength-deep: #1f6e30;
+  --color-strength-bg: #edf8e8;
+  --color-strength-border: #cfe9bf;
+
+  /* Gaps — confident coral */
+  --color-gap: #c4453a;
+  --color-gap-deep: #a13629;
+  --color-gap-bg: #fce7e1;
+  --color-gap-border: #f3c8bd;
+
+  /* Skills surface — gentle lavender-blue (matches the reference) */
+  --color-skills-bg: #eef1fe;
+  --color-skills-border: #d8def8;
+
+  /* Score scale */
+  --color-score-high: #2a8a3e;
+  --color-score-mid: #c2691a;
+  --color-score-low: #c4453a;
+
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+  --font-serif: var(--font-instrument-serif);
+}
+
+html, body {
+  background: var(--color-bg);
+  color: var(--color-ink);
+  font-family: var(--font-sans), system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  font-feature-settings: "ss01", "ss02", "cv11";
+}
+
+/* Subtle blue wash for atmosphere */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background:
+    radial-gradient(1200px 700px at 8% -10%, rgba(42, 82, 224, 0.06), transparent 60%),
+    radial-gradient(900px 600px at 100% 100%, rgba(42, 82, 224, 0.04), transparent 60%);
+  pointer-events: none;
+  z-index: 0;
+}
+body > * { position: relative; z-index: 1; }
+
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+  background: var(--color-border);
+  border-radius: 6px;
+  border: 2px solid var(--color-bg);
+}
+::-webkit-scrollbar-thumb:hover { background: var(--color-border-strong); }
+
+::selection {
+  background: var(--color-brand-soft);
+  color: var(--color-brand-deep);
+}
+
+/* Type */
+.smallcaps {
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  font-weight: 600;
+}
+.tnum { font-variant-numeric: tabular-nums lining-nums; }
+
+/* Card primitive — NO border by default; consumers set their own so they
+   can override without fighting CSS cascade (Tailwind utilities are layered,
+   unlayered .card rules would otherwise win). */
+.card {
+  background: var(--color-card);
+  border-radius: 16px;
+  box-shadow:
+    0 1px 2px rgba(14, 30, 58, 0.025),
+    0 12px 32px -24px rgba(14, 30, 58, 0.12);
+  transition:
+    box-shadow 0.3s cubic-bezier(0.2, 0.7, 0.2, 1),
+    border-color 0.3s cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+.card-hover {
+  transition:
+    transform 0.3s cubic-bezier(0.2, 0.7, 0.2, 1),
+    box-shadow 0.3s cubic-bezier(0.2, 0.7, 0.2, 1),
+    border-color 0.3s cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+.card-hover:hover {
+  transform: translateY(-1px);
+  box-shadow:
+    0 1px 2px rgba(14, 30, 58, 0.025),
+    0 18px 38px -22px rgba(42, 82, 224, 0.22);
+  border-color: var(--color-brand-soft);
+}
+
+/* Section rule */
+.section-rule {
+  height: 1px;
+  background: linear-gradient(to right, var(--color-border), transparent 80%);
+}
+
+/* Skill chip — refined */
+.chip {
+  background: #ffffff;
+  border: 1px solid var(--color-border-soft);
+  border-radius: 8px;
+  padding: 5px 10px;
+  font-size: 12.5px;
+  color: var(--color-ink-soft);
+  transition:
+    border-color 0.2s ease,
+    background-color 0.2s ease,
+    color 0.2s ease;
+  cursor: default;
+}
+.chip:hover {
+  border-color: var(--color-brand);
+  color: var(--color-brand-deep);
+  background: var(--color-brand-soft);
+}
+
+/* Row hover — subtle wash */
+.row-hover {
+  transition: background-color 0.22s ease;
+  border-radius: 10px;
+  margin: 0 -10px;
+  padding: 6px 10px;
+}
+.row-hover:hover { background: var(--color-brand-soft); }
+
+/* Link with arrow */
+.link-arrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--color-brand);
+  font-weight: 500;
+  transition: color 0.2s ease;
+}
+.link-arrow svg {
+  transition: transform 0.25s cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+.link-arrow:hover { color: var(--color-brand-deep); }
+.link-arrow:hover svg { transform: translate(2px, -2px); }
+
+/* Button — primary */
+.btn-primary {
+  background: var(--color-brand);
+  color: #ffffff;
+  border-radius: 10px;
+  font-weight: 500;
+  transition:
+    background-color 0.2s ease,
+    box-shadow 0.25s ease;
+}
+.btn-primary:hover:not(:disabled) {
+  background: var(--color-brand-bright);
+  box-shadow: 0 10px 24px -10px var(--color-brand-glow);
+}
+
+/* Motion */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.fade-up { animation: fadeUp 0.5s cubic-bezier(0.2, 0.7, 0.2, 1) both; }
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+.fade-in { animation: fadeIn 0.4s ease-out both; }
+
+@keyframes thinkingDot {
+  0%, 60%, 100% { opacity: 0.2; transform: scale(0.9); }
+  30% { opacity: 1; transform: scale(1); }
+}
+.thinking-dot { animation: thinkingDot 1.4s ease-in-out infinite; }
+
+@keyframes pulseSoft {
+  0%, 100% { opacity: 0.7; }
+  50% { opacity: 1; }
+}
+.pulse-soft { animation: pulseSoft 2s ease-in-out infinite; }
+
+/* Staggered children */
+.stagger > * { opacity: 0; animation: fadeUp 0.5s cubic-bezier(0.2, 0.7, 0.2, 1) both; }
+.stagger > *:nth-child(1) { animation-delay: 0.04s; }
+.stagger > *:nth-child(2) { animation-delay: 0.08s; }
+.stagger > *:nth-child(3) { animation-delay: 0.12s; }
+.stagger > *:nth-child(4) { animation-delay: 0.16s; }
+.stagger > *:nth-child(5) { animation-delay: 0.20s; }
+.stagger > *:nth-child(6) { animation-delay: 0.24s; }
+.stagger > *:nth-child(7) { animation-delay: 0.28s; }
+.stagger > *:nth-child(8) { animation-delay: 0.32s; }
+
+/* Date column — orange mono like the reference */
+.exp-date {
+  font-variant-numeric: tabular-nums;
+  font-family: var(--font-mono), monospace;
+  color: var(--color-section);
+  font-size: 11px;
+  line-height: 1.5;
+  letter-spacing: 0.02em;
+}
+
+/* Scanning animation — used in the upload "reading" state */
+@keyframes scanSweep {
+  0%   { transform: translateY(-110%); opacity: 0; }
+  10%  { opacity: 1; }
+  50%  { transform: translateY(0);    opacity: 1; }
+  90%  { opacity: 1; }
+  100% { transform: translateY(110%); opacity: 0; }
+}
+.scan-sweep { animation: scanSweep 2.2s ease-in-out infinite; }
+
+@keyframes lineShimmer {
+  0%, 100% { opacity: 0.4; }
+  50%      { opacity: 1; }
+}
+.line-shimmer { animation: lineShimmer 1.6s ease-in-out infinite; }
+
+@keyframes phaseEnter {
+  from { opacity: 0; transform: translateX(-4px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+.phase-enter { animation: phaseEnter 0.34s cubic-bezier(0.2, 0.7, 0.2, 1) both; }
+
+@keyframes glowPulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(45, 91, 255, 0.35); }
+  50%      { box-shadow: 0 0 0 14px rgba(45, 91, 255, 0); }
+}
+.glow-pulse { animation: glowPulse 1.8s ease-out infinite; }
