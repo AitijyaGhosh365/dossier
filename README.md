@@ -1,15 +1,10 @@
 # Dossier — Intelligent Resume Assistant
 
-An agentic AI hiring assistant that reads a candidate's resume and answers a
+An agentic AI hiring tool that reads a candidate's resume and answers a
 recruiter's questions about them — with structured outputs, source
 attribution, and a visible reasoning trace on every reply.
 
-Built as the take-home for the **Agentic Architect** role at Alchemyst AI
-(May 2026 hiring cycle). The full spec is in
-[`.claude/fullstack-ai-assignment.md`](./.claude/fullstack-ai-assignment.md).
-This README documents what I built, why, and how to run it.
-
-> **Demo:** *[insert recorded walkthrough link here once uploaded]*
+> **Demo:** *[insert walkthrough link]*
 
 ---
 
@@ -18,25 +13,25 @@ This README documents what I built, why, and how to run it.
 | | |
 |---|---|
 | **Stack** | Next.js 16 (App Router) · FastAPI · Claude Sonnet 4.6 (Anthropic SDK) |
-| **Lines** | ~1,000 lines of Python · ~2,500 lines of TypeScript |
-| **Frameworks (none)** | No LangChain, no LlamaIndex — a hand-rolled tool-calling loop, ~60 lines |
-| **Sessions** | In-memory `SessionStore`; bookmarks + skill-score state persisted in `localStorage` per session |
-| **LLM transport** | PDFs go to Claude directly as `document` content blocks (native vision-based PDF reading). `pypdf` is used **only** to populate a `raw_text` field locally so the search tool doesn't pay for Claude to regurgitate the document. |
+| **Size** | ~1,000 lines of Python · ~2,500 lines of TypeScript |
+| **No agent framework** | Hand-rolled tool-calling loop, ~60 lines. No LangChain, no LlamaIndex. |
+| **Sessions** | In-memory `SessionStore` on the backend; bookmarks + skill-score state persisted in `localStorage` per session on the client. |
+| **PDF transport** | PDFs go to Claude directly as `document` content blocks — native vision-based PDF reading. `pypdf` is used **only** to populate a `raw_text` field locally so the search tool doesn't pay for Claude to regurgitate the document. |
 | **Caching** | Prompt caching on system prompt + tool declarations + resume grounding preamble — every turn after the first reuses cached input tokens. |
 
 ---
 
 ## What's in the box
 
-**Core (assignment requirements)**
+**Core**
 
 - **PDF / text resume input** — Claude reads the PDF natively; we extract a structured profile in one call.
 - **Structured profile** — name, contact, links (with auto-protocol fix), summary, **categorized skills** (Frontend / Backend / AI-ML / etc.), dated experience, education with **scores**, **projects** (with tech-stack chips), **achievements & awards**.
-- **Chat interface** — multi-turn, conversation history preserved across turns, color-graded confidence on every reply, "From resume" / "Inferred" source badges with tooltip explanations.
-- **Strict structured output** — the assignment's mandated `{answer, confidence, source, missing_data}` shape, validated by Pydantic on the way out.
-- **Guardrails** — explicit "Not in resume" handling, regex-based placeholder detector that rejects lazy `...above...` replies, single repair retry on validation failure, safe fallback if both attempts fail.
+- **Chat interface** — multi-turn, conversation history preserved across turns, color-graded confidence on every reply, "From resume" / "Inferred" source badges with hover tooltips.
+- **Strict structured output** — every reply matches `{answer, confidence, source, missing_data}`, validated by Pydantic on the way out.
+- **Guardrails** — explicit "Not in resume" handling, a regex-based placeholder detector that rejects lazy `...above...` replies, a single repair retry on validation failure, and a safe fallback if both attempts fail.
 
-**Agent tools (model decides when)**
+**Agent tools (model decides when to call)**
 
 - `match_skills(required_skills)` — deterministic case-insensitive set match with normalization.
 - `calculate_experience()` — deterministic; merges overlapping intervals so concurrent roles aren't double-counted.
@@ -132,9 +127,9 @@ This README documents what I built, why, and how to run it.
 
 ---
 
-## Agentic design — how each rubric item is met
+## Design
 
-### Role alignment (Agentic Design — 25%)
+### Role alignment
 
 The system prompt in `agent.py` defines the agent as a hiring-side
 assistant, lists what it *will* and *will not* discuss, and instructs it to
@@ -163,7 +158,7 @@ Interview Questions, Strengths & Gaps) are **forced-tool-call** flows —
 one-shot Claude calls with `tool_choice` pinned to a structured submit
 tool, so the result shape is guaranteed by the API.
 
-### Guardrails (Reliability — 15%)
+### Guardrails
 
 - **System-prompt rules** — `NEVER fabricate`, `NEVER invent skills/years/companies`, explicit `"Not mentioned in resume"` requirement, banned-placeholder list (`...above...`, `(see above)`, `as mentioned earlier`).
 - **Strict schema validation** — `StructuredAnswer` Pydantic model with `extra="forbid"`. The agent's textual output is parsed and validated.
@@ -173,9 +168,9 @@ tool, so the result shape is guaranteed by the API.
 - **Confidence calibration** — the prompt prescribes a 4-band confidence guide; the UI then renders confidence as a continuous HSL red→green gradient so low-confidence claims are visually obvious.
 - **Tool errors don't crash the agent** — a thrown tool gets wrapped as `{"error": "..."}` and fed back to the model so it can recover.
 
-### Structured output (mandatory)
+### Structured output
 
-The spec requires every chat reply to match:
+Every chat reply matches:
 
 ```ts
 { answer: string, confidence: 0-1, source: "resume" | "inference", missing_data: string[] }
@@ -184,7 +179,7 @@ The spec requires every chat reply to match:
 This is the `StructuredAnswer` Pydantic model in `schemas.py`, with
 `extra="forbid"`. The model's text output is parsed, the four spec fields
 are validated, and the additional `_suggestions` field (used for the
-follow-up question chips) is plucked separately so the spec contract stays
+follow-up question chips) is plucked separately so the contract stays
 clean.
 
 ---
@@ -199,7 +194,7 @@ clean.
 - **`pypdf` for `raw_text` extraction only.** The agent's `search_resume`
   tool needs plain text for substring search. Instead of asking Claude to
   regurgitate the entire document in its JSON output (which would add
-  ~1,500 output tokens = ~15-25s of extra latency), we extract text
+  ~1,500 output tokens = ~15–25s of extra latency), text is extracted
   locally with `pypdf` in <100 ms. The PDF still goes to Claude directly
   for *structured* extraction.
 
@@ -208,28 +203,27 @@ clean.
   turn after the first reuses cached input tokens — meaningful cost +
   latency win on long sessions.
 
-- **In-memory sessions, no DB.** Two-day budget, single recruiter at a
-  time. The `SessionStore` interface is intentionally narrow so a SQLite
-  or Redis swap is mechanical and touches no other module. The right-rail
-  state that *should* survive a backend restart (bookmarks, skill scores)
-  is persisted client-side in `localStorage` per session.
+- **In-memory sessions, no DB.** Single recruiter at a time. The
+  `SessionStore` interface is intentionally narrow so a SQLite or Redis
+  swap is mechanical and touches no other module. The right-rail state
+  that *should* survive a backend restart (bookmarks, skill scores) is
+  persisted client-side in `localStorage` per session.
 
 - **No streaming.** The structured-answer shape doesn't stream well —
   the UI needs the whole JSON to render the confidence bar, source
-  badge, and missing-data chips together. I chose clarity over
-  token-by-token. Streaming the *tool trace* (each call as it resolves)
-  is the better future direction.
+  badge, and missing-data chips together. Clarity over token-by-token.
+  Streaming the *tool trace* (each call as it resolves) is the better
+  future direction.
 
 - **Hand-rolled tool loop, no agent framework.** With three deterministic
   tools + four forced-tool flows, LangChain or LlamaIndex would have
   been more orchestration surface than logic. `tool_calling_loop` is
-  about 60 lines and visibly does exactly what the spec asks.
+  about 60 lines and visibly does exactly what's needed.
 
-- **WebRTC voice bonus skipped.** Per the spec, optional. The "no STT,
-  no TTS" constraint implies a voice-native model (OpenAI Realtime /
-  Gemini Live), and Claude doesn't have an equivalent API today. Adding
-  it cleanly would mean a second provider for a single feature —
-  out of scope for the time budget.
+- **WebRTC voice — out of scope.** A "no STT, no TTS" voice path
+  implies a voice-native model (OpenAI Realtime / Gemini Live), and
+  Claude doesn't have an equivalent API today. Adding it cleanly would
+  mean a second provider for a single feature.
 
 ---
 
@@ -285,4 +279,4 @@ Open <http://localhost:3000>.
 - **Resume highlights** — link `search_resume` snippets back to source lines in a viewer, so a reviewer can see the literal evidence behind a claim.
 - **Multi-candidate comparison** — the session model already supports it; add a top-level `Workspace` and a side-by-side dossier view.
 - **Persistence** — swap `SessionStore` for SQLite-via-SQLAlchemy. No other module needs to change.
-- **WebRTC voice bonus** — implementable via OpenAI Realtime or Gemini Live as a *second* provider (Claude doesn't expose a voice-native API today).
+- **WebRTC voice** — implementable via OpenAI Realtime or Gemini Live as a *second* provider (Claude doesn't expose a voice-native API today).
